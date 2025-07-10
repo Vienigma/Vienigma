@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Birthday Countdown</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1em;
+      margin: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      background-color: #00c6ff;
+      color: black;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0072ff;
+      color: white;
+    }
+
+    .countdown {
+      font-size: 2em;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .time {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .number {
+      font-size: 3em;
+      font-weight: bold;
+    }
+
+    .label {
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #birthdayMessage {
+      font-size: 1.8em;
+      margin-top: 40px;
+      color: #ffdd57;
+    }
+
+    #cakeContainer {
+      margin-top: 30px;
+      cursor: pointer;
+      animation: bounce 1s infinite;
+      display: none;
+    }
+
+    .cake {
+      width: 120px;
+      margin: 0 auto;
+    }
+
+    .candle {
+      width: 10px;
+      height: 30px;
+      background: orange;
+      margin: 0 auto;
+      animation: flicker 0.3s infinite;
+    }
+
+    .cake-body {
+      background: pink;
+      height: 60px;
+      border-radius: 0 0 10px 10px;
+      box-shadow: inset 0 -10px 0 rgba(255, 200, 200, 0.8);
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    iframe {
+      margin-top: 20px;
+      border: none;
+    }
+
+    #musicPlayer, #backgroundAudio {
+      display: none;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: red;
+      animation: fall 3s linear infinite;
+      z-index: 9999;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-100px) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
+  </style>
+</head>
+<body onload="autoPlayBackgroundMusic()">
+
+  <h1>🎉 Enter The Following</h1>
+
+  <div style="display: flex; flex-direction: column; align-items: center;">
+    <label for="nameInput" style="font-size: 1.2em; margin-top: 10px;">Name:</label>
+    <input type="text" id="nameInput" placeholder="Enter your name (optional)" />
+
+    <label for="birthDateInput" style="font-size: 1.2em; margin-top: 20px;">Birth Date:</label>
+    <input type="date" id="birthDateInput" />
+
+    <button onclick="startCountdown()">Submit</button>
+  </div>
+
+  <div id="countdownSection" style="display:none;">
+    <h2>Countdown</h2>
+    <div class="countdown" id="countdown">
+      <div class="time">
+        <div class="number" id="days">0</div>
+        <div class="label">Days</div>
+      </div>
+      <div class="time">
+        <div class="number" id="hours">0</div>
+        <div class="label">Hours</div>
+      </div>
+      <div class="time">
+        <div class="number" id="minutes">0</div>
+        <div class="label">Minutes</div>
+      </div>
+      <div class="time">
+        <div class="number" id="seconds">0</div>
+        <div class="label">Seconds</div>
+      </div>
+    </div>
+    <div id="birthdayMessage"></div>
+  </div>
+
+  <div id="cakeContainer" onclick="playMusic()">
+    <div class="cake">
+      <div class="candle"></div>
+      <div class="cake-body"></div>
+    </div>
+    <p>🎂 Tap the cake to play your surprise!</p>
+  </div>
+
+  <!-- Background music -->
+  <audio id="backgroundAudio" loop autoplay>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/12/audio_c6f925ff9e.mp3?filename=soft-background-ambient-122054.mp3" type="audio/mp3">
+    Your browser does not support the audio tag.
+  </audio>
+
+  <!-- YouTube music player -->
+  <div id="musicPlayer">
+    <iframe width="0" height="0" id="ytPlayer"
+      src=""
+      allow="autoplay"
+      allowfullscreen></iframe>
+  </div>
+
+  <script>
+    let countdownInterval = null;
+
+    function autoPlayBackgroundMusic() {
+      const audio = document.getElementById("backgroundAudio");
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        document.body.addEventListener('click', () => audio.play(), { once: true });
+      });
+    }
+
+    function startCountdown() {
+      const nameInput = document.getElementById("nameInput").value.trim();
+      const name = nameInput ? nameInput : "friend"; // default if name is blank
+      const birthDateInput = document.getElementById("birthDateInput").value;
+
+      if (!birthDateInput) {
+        alert("Please enter your birth date.");
+        return;
+      }
+
+      const selectedDate = new Date(birthDateInput);
+      const now = new Date();
+
+      let targetDate = new Date(now.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
+      if (targetDate < now) {
+        targetDate.setFullYear(now.getFullYear() + 1);
+      }
+
+      document.getElementById("countdownSection").style.display = "block";
+      document.getElementById("cakeContainer").style.display = "none";
+      document.getElementById("musicPlayer").style.display = "none";
+      document.getElementById("ytPlayer").src = "";
+      document.getElementById("birthdayMessage").innerHTML = "";
+
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => updateCountdown(targetDate, name), 1000);
+      updateCountdown(targetDate, name);
+    }
+
+    function updateCountdown(targetDate, name) {
+      const now = new Date().getTime();
+      const distance = targetDate.getTime() - now;
+
+      if (distance <= 0) {
+        clearInterval(countdownInterval);
+        document.getElementById("countdown").style.display = "none";
+        document.getElementById("birthdayMessage").innerHTML = `
+          🥳 Happy Birthday, ${name}!
+          <br>Wishing you love, success, and cake! 🎂`;
+        document.getElementById("cakeContainer").style.display = "block";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").innerText = days;
+      document.getElementById("hours").innerText = hours;
+      document.getElementById("minutes").innerText = minutes;
+      document.getElementById("seconds").innerText = seconds;
+    }
+
+    function playMusic() {
+      const ytUrl = "https://www.youtube.com/embed/PNZARV2Iq3k?autoplay=1";
+      document.getElementById("ytPlayer").src = ytUrl;
+      document.getElementById("musicPlayer").style.display = "block";
+      document.getElementById("cakeContainer").style.display = "none";
+      launchConfetti();
+    }
+
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
+        confetti.style.opacity = Math.random();
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 4000);
+      }
+    }
+  </script>
+
+</body>
+</html>
